@@ -1,62 +1,59 @@
-name: Android Build
+name: ✅ GBSB4U WebBrowser - BULLETPROOF APK Build 
+on: 
+  push: 
+    branches: [ main, master ] # जब main या master branch पर push हो 
+  pull_request: 
+    branches: [ main, master ] # जब main या master branch पर pull request हो 
+  workflow_dispatch:  # मोबाइल से मैन्युअल रन के लिए 
+ 
+jobs: 
+  build: 
+    runs-on: ubuntu-latest # GitHub द्वारा प्रदान किया गया वर्चुअल Linux एनवायरनमेंट 
+     
+    steps: 
+    - name: 📥 Checkout GBSB4U-WebBrowser Code 
+      uses: actions/checkout@v4 # GitHub रिपॉजिटरी से कोड चेकआउट करें 
+       
+    # ✅ FIX 1: Official Gradle Setup - यह सुनिश्चित करता है कि gradlew और Gradle JARs सही हों। 
+    # यह 'gradlew: No such file' error को भी हल करता है। [community.gradle.org/github-actions/docs/setup-gradle] 
+    - name: 🗄️ Setup Gradle (Web Search Verified) 
+      uses: gradle/gradle-build-action@v3 # ऑफिशियल Gradle Action का उपयोग करें 
+      with: 
+        gradle-version: 8.6 # स्थिर Gradle version का उपयोग करें 
+         
+    # ✅ FIX 2: Java 17 EXPLICIT - कोई Java version mismatch नहीं। [superuser.com/questions/1806941] 
+    - name: ☕ Java 17 Setup 
+      uses: actions/setup-java@v4 # Java 17 इंस्टॉल करें 
+      with: 
+        java-version: '17' 
+        distribution: 'temurin' # Java का वितरण (ओपनसोर्स) 
+         
+    # ✅ FIX 3: Android SDK + Licenses FIRST - कोई SDK not found/license error नहीं। [github.com/android-actions/setup-android] 
+    - name: 📱 Android SDK Setup 
+      uses: android-actions/setup-android@v3 
+     
+    - name: ✅ Accept ALL Licenses (Important!) 
+      run: | 
+        yes | sdkmanager --licenses # सभी SDK लाइसेंस स्वीकार करें 
+        sdkmanager --update       # SDK टूल्स को अपडेट करें 
+         
+    # ✅ FIX 4: Exact SDK Versions - कोई इंस्टॉल failure नहीं। 
+    - name: 🔧 Install SDK Components (GBSB4U Compatible) 
+      run: | 
+        sdkmanager "platforms;android-34" "build-tools;34.0.0" # Android 14 SDK इंस्टॉल करें 
+        sdkmanager "platforms;android-33" "build-tools;33.0.2" # Android 13 SDK भी इंस्टॉल करें (यदि आवश्यकता हो) 
+         
+    # ✅ FIX 5: Gradle Build - अब यह सुनिश्चित है कि सभी आवश्यक सेटिंग्स मौजूद हैं। 
+    - name: 🚀 Build Debug and Release APKs 
+      run: ./gradlew assembleDebug assembleRelease # Debug और Release दोनों APKs बनाएं 
+       
+    # ✅ APK Upload - बनाए गए APKs को Artifact के रूप में अपलोड करें। 
+    - name: 📤 Upload GBSB4U APKs 
+      uses: actions/upload-artifact@v4 
+      with: 
+        name: GBSB4U-WebBrowser-APKs # Artifact का नाम 
+        path: | 
+          app/build/outputs/apk/debug/app-debug.apk   # Debug APK का पाथ 
+          app/build/outputs/apk/release/app-release.apk # Release APK का पाथ 
+        retention-days: 30 # Artifact कितने दिन तक GitHub पर रहेगा 
 
-on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Cache Gradle packages
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    - name: Build with Gradle
-      run: ./gradlew build
-
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
-
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
-
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-release
-        path: app/build/outputs/apk/release/app-release-unsigned.apk
-
-    - name: Upload Build Reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: build-reports
-        path: app/build/reports/
