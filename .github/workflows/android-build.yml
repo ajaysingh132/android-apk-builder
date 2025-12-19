@@ -21,14 +21,14 @@ jobs:
       with: 
         gradle-version: 8.6 # स्थिर Gradle version का उपयोग करें 
          
-    # ✅ FIX 2: Java 17 EXPLICIT - कोई Java version mismatch नहीं। [superuser.com/questions/1806941] 
+    # ✅ FIX 2: Java 17 EXPLICIT - कोई Java version mismatch नहीं है। [superuser.com/questions/1806941] 
     - name: ☕ Java 17 Setup 
       uses: actions/setup-java@v4 # Java 17 इंस्टॉल करें 
       with: 
         java-version: '17' 
         distribution: 'temurin' # Java का वितरण (ओपनसोर्स) 
          
-    # ✅ FIX 3: Android SDK + Licenses FIRST - कोई SDK not found/license error नहीं। [github.com/android-actions/setup-android] 
+    # ✅ FIX 3: Android SDK + Licenses FIRST - कोई SDK not found/license error नहीं है। [github.com/android-actions/setup-android] 
     - name: 📱 Android SDK Setup 
       uses: android-actions/setup-android@v3 
      
@@ -37,7 +37,7 @@ jobs:
         yes | sdkmanager --licenses # सभी SDK लाइसेंस स्वीकार करें 
         sdkmanager --update       # SDK टूल्स को अपडेट करें 
          
-    # ✅ FIX 4: Exact SDK Versions - कोई इंस्टॉल failure नहीं। 
+    # ✅ FIX 4: Exact SDK Versions - कोई इंस्टॉल failure नहीं है। 
     - name: 🔧 Install SDK Components (GBSB4U Compatible) 
       run: | 
         sdkmanager "platforms;android-34" "build-tools;34.0.0" # Android 14 SDK इंस्टॉल करें 
